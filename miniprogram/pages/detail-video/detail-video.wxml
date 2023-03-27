@@ -1,2 +1,14 @@
-<!--pages/detail-video/detail-video.wxml-->
-<text>{{id}}</text>
+<view>
+  <video 
+  src="{{MVUrl}}" 
+  autoplay 
+  class="video"
+></video>
+</view>
+<scroll-view scroll-y class="content">
+  <video-info class="info" MVInfo="{{MVInfo}}"></video-info>
+  <view class="recommend">
+    <view class="title">推荐视频：</view>
+    <video-recommend MVRecommend="{{MVRecommend}}"></video-recommend>
+  </view>
+</scroll-view>

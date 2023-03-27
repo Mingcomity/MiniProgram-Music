@@ -1,0 +1,19 @@
+<!--components/video-info/video-info.wxml-->
+<wxs src="../../utils/format.wxs" module="fmt"/>
+<view class="info">
+  <view class="header">
+    <view class="title">{{MVInfo.name}}</view>
+    <view class="content">
+      <text>{{MVInfo.publishTime}}</text>
+      <text space="ensp">{{fmt.formatCount(MVInfo.duration)}}次播放  </text>
+    </view>
+  </view>
+  <scroll-view class="artists" scroll-x enable-flex>
+    <block wx:for="{{MVInfo.artists}}" wx:key="id">
+      <view class="artist">
+        <image src="{{item.imgUrl}}"  mode="aspectFill" class="artImg"/>
+        <text class="artName">{{item.name}}</text>
+      </view>
+    </block>
+  </scroll-view>
+</view>

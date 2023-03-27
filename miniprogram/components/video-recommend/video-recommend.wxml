@@ -1,0 +1,18 @@
+<!--components/video-recommend/video-recommend.wxml-->
+<wxs src="../../utils/format.wxs" module="fmt"/>
+<scroll-view class="mvRecommend" scroll-y>
+  <block wx:for="{{MVRecommend}}" wx:key="id">
+    <view class="item">
+      <view class="album">
+        <image class="image" src="{{item.url}}" mode="widthFix" />
+        <view class="info">
+          <view class="count">{{fmt.formatCount(item.duration)}}</view>
+        </view>
+      </view>
+      <view class="content">
+        <text>{{item.title}}</text>
+        <text class="contentArt">—— {{item.artName}}</text>
+      </view>
+    </view>
+  </block>
+</scroll-view>

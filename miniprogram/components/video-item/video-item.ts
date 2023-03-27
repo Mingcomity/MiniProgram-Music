@@ -6,7 +6,7 @@ Component({
     }
   },
   methods: {
-    onVideoItemTap(event:any) {
+    onVideoItemTap() {
       wx.navigateTo({
         url: `../detail-video/detail-video?id=${this.data.itemData.id}`
       })
