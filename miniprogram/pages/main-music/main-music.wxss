@@ -1,7 +1,21 @@
 /* pages/main-music/main-music.wxss */
 page{
+  box-sizing: border-box;
+  padding: 0 24rpx;
   background-color: #fafafa;
+}
+/* 样式重置 */
+.van-search {
+  padding:10rpx 0 !important;
 }
 .van-search__content {
   background-color: #fff !important;
 }
+.banner .item  {
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+.banner-image {
+  width: 100%;
+}
+

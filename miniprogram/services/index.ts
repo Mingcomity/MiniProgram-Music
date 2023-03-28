@@ -1,4 +1,4 @@
-
+import { baseURL } from './config'
 // 封装成类
 class hyRequest {
   readonly baseURL: string
@@ -28,4 +28,4 @@ class hyRequest {
     return this.request({...options, method: "POST"})
   }
 }
-export const HYRequest = new hyRequest('http://codercba.com:9002')
+export const HYRequest = new hyRequest(baseURL)

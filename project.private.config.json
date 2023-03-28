@@ -2,7 +2,7 @@
   "description": "项目私有配置文件。此文件中的内容将覆盖 project.config.json 中的相同字段。项目的改动优先同步到此文件中。详见文档：https://developers.weixin.qq.com/miniprogram/dev/devtools/projectconfig.html",
   "projectname": "Mingcomity-Music",
   "setting": {
-    "compileHotReLoad": true,
+    "compileHotReLoad": false,
     "urlCheck": false
   },
   "condition": {
@@ -19,6 +19,13 @@
           "name": "视频播放页面",
           "pathName": "pages/detail-video/detail-video",
           "query": "id=14599761",
+          "launchMode": "default",
+          "scene": null
+        },
+        {
+          "name": "歌单详情",
+          "pathName": "pages/detail-menu/detail-menu",
+          "query": "",
           "launchMode": "default",
           "scene": null
         }

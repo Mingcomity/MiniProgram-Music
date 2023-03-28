@@ -1,6 +1,41 @@
+<!-- 搜索框 -->
 <van-search
   value="{{ searchValue }}"
   shape="round"
   background="#fafafa"
   placeholder="请输入搜索关键词"
+  bind:click-input="onSearchClick"
 />
+<!-- 轮播图 -->
+<swiper class="banner" circular indicator-dots style="height: {{bannerHeight}}px;" wx:if="{{banners.length}}">
+  <block wx:for="{{banners}}" wx:key="targetId">
+    <swiper-item class="item">
+      <image class="banner-image" src="{{item.imageUrl}}" mode="widthFix" bindload="onBannerImageLoad"/>
+    </swiper-item>
+  </block>
+</swiper>
+<!-- 推荐歌曲 -->
+<view class="recommend" wx:if="{{recommendSongs.length}}">
+  <area-header bind:moreclick = "onRecommendMoreClick">推荐歌曲</area-header>
+  <view class="list">
+    <block wx:for="{{recommendSongs}}" wx:key="id">
+      <song-item-v1 itemData="{{item}}"></song-item-v1>
+    </block>
+  </view>
+</view>
+
+<!-- 热门歌单 -->
+<menu-area title="热门歌单" menuList="{{ hotMenuList }}" ></menu-area>
+<menu-area title="华语歌单" menuList="{{ recMenuList }}"></menu-area>
+
+<!-- 榜单数据 -->
+<view class="ranking" wx:if="{{isRankingData}}">
+  <area-header hasMore = "{{false}}">巅峰榜</area-header>
+  <view class="ranking-list">
+    <block wx:for="{{rankingInfos}}" wx:key="id">
+      <view>
+        <ranking-item itemData="{{item}}" key="{{index}}"></ranking-item>
+      </view>
+    </block>
+  </view>
+</view>

@@ -1,0 +1,16 @@
+<!-- 首页歌单横向滚动 -->
+<view class="hot-menu" wx:if="{{menuList.length}}">
+  <area-header bind:moreclick = "onMenuMoreCilck">{{title}}</area-header>
+  <scroll-view 
+    class="list" 
+    scroll-x 
+    enable-flex 
+    style="width: {{screenWidth}}px;"
+  >
+    <block wx:for="{{menuList}}" wx:key="id" >
+      <view class="item">
+        <menu-item  itemData="{{item}}"></menu-item>
+      </view>    
+    </block>
+  </scroll-view>
+</view>
