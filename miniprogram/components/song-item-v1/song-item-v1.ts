@@ -21,6 +21,10 @@ Component({
    * 组件的方法列表
    */
   methods: {
-
+    onSongTap() {
+      wx.navigateTo({
+        url:`../../pages/music-player/music-player?id=${this.data.itemData.id}`
+      })
+    }
   }
 })

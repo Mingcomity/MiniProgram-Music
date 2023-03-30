@@ -1,0 +1,30 @@
+
+.nav {
+  display: flex;
+  color: #fff;
+}
+.nav .left, .nav .right {
+  width: 120rpx;
+}
+.nav .center {
+  flex: 1
+}
+.left, .center ,.right,.slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+ 
+/* 控制显示 */
+.default {
+  display: none;
+}
+.icon {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.slot:empty + .default {
+  display: flex;
+}
+

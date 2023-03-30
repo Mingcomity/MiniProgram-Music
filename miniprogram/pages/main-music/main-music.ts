@@ -2,6 +2,7 @@ import { getMusicBanner, getSongMenuList } from '../../services/music'
 import {querySelect} from '../../utils/query-select'
 import recommendStore from '../../store/recommendStore'
 import rankingStore from '../../store/rankinfStore'
+import playerStore from '../../store/playerStore'
 import { throttle } from 'underscore'
 const querySelectThrottle = throttle(querySelect, 100, { trailing: false})
 
@@ -58,6 +59,11 @@ Page({
     wx.navigateTo({
       url: '../detail-song/detail-song?type=recommend'
     })
+  },
+  // 监听点击歌曲
+  onSongItemTap(event:any) {
+    playerStore.setState("playSongList", this.data.recommendSongs)
+    playerStore.setState("playSongIndex",event.currentTarget.dataset.index)
   },
   // 请求轮播图
   async fetchMusicBanner() {

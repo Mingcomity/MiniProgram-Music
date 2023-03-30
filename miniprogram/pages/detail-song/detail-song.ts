@@ -1,12 +1,13 @@
 import recommendStore from "../../store/recommendStore"
 import rankingStore from "../../store/rankinfStore"
 import { getPlaylistDetail } from '../../services/music'
+import playerStore from "../../store/playerStore"
 
 Page({
   data:{
     type: "ranking",
     key: 'newRanking',
-    songInfo: {},
+    songInfo:<any>{},
     id: 0
   },
   onLoad(options:any) {
@@ -37,6 +38,10 @@ Page({
     } else if( this.data.type === "recommend") {
       recommendStore.offState("recommendSongInfo", this.handleRanking)
     }
+  },
+  onSongItemTap(event:any) {
+    playerStore.setState("playSongList", this.data.songInfo.tracks)
+    playerStore.setState("playSongIndex",event.currentTarget.dataset.index)
   },
   // 修改data中的数据，用于榜单的获取
   handleRanking(value:any) {
