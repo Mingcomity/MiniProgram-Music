@@ -1,66 +1,74 @@
-// pages/detail-search/detail-search.ts
+import {getSearchHot,  getSearchSuggest,  getSearchResult} from '../../services/search'
+import playerStore from '../../store/playerStore'
+import debounce from '../../utils/debounce'
+import stringToNodes from '../../utils/string2nodes'
+
+const debounceGetSearchSuggest = debounce(getSearchSuggest, 100)
+
 Page({
 
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    // 输入框数据
+    searchValue:'',
+    // 推荐搜索数据
+    hotKeywords:'',
+    suggestSongs: [],
+    suggestSongsNodes: <any>[],
+    resultSongs: [],
   },
-
-  /**
-   * 生命周期函数--监听页面加载
-   */
   onLoad() {
-
+    this.getPageData()
   },
+  handleSearchChange(event: any) {
+    const searchValue: any = event.detail
+    this.setData({ searchValue })
+    if (!searchValue.length) {
+      this.setData({ suggestSongs: [], resultSongs: [] })
+      debounceGetSearchSuggest.cancel()
+      return
+    }
+    // 根据输入值进行搜索
+    debounceGetSearchSuggest(searchValue).then((res: any) => {
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
+      // 1.获取建议的关键字歌曲
+      const suggestSongs = res.result.allMatch
+      this.setData({ suggestSongs })
+      if (!suggestSongs) return
 
+      // 2.转成nodes节点
+      const suggestKeywords = suggestSongs.map((item: any) => item.keyword)
+      const suggestSongsNodes = []
+      for (const keyword of suggestKeywords) {
+        const nodes = stringToNodes(keyword, searchValue)
+        suggestSongsNodes.push(nodes)
+      }
+      this.setData({ suggestSongsNodes })
+    })
   },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
-  onShow() {
-
+  onSongItemTap(event: any) {
+    playerStore.setState("playSongList", this.data.resultSongs)
+    playerStore.setState("playSongIndex",event.currentTarget.dataset.index)
   },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
+  // 网络请求
+  getPageData: function() {
+    getSearchHot().then((res: any) => {
+      this.setData({ hotKeywords: res.result.hots })
+    })
   },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
+  handleSearchAction: function() {
+    const searchValue = this.data.searchValue
+    getSearchResult(searchValue).then((res: any) => {
+      this.setData({ resultSongs: res.result.songs })
+    })
   },
+  handleKeywordItemClick: function(event: any) {
+    // 1.获取点击的关键字
+    const keyword = event.currentTarget.dataset.keyword
 
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
+    // 2.将关键设置到searchValue中
+    this.setData({ searchValue: keyword })
 
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+    // 3.发送网络请求
+    this.handleSearchAction()
   }
 })

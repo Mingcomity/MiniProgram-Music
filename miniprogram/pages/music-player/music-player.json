@@ -1,6 +1,8 @@
 {
   "usingComponents": {
-    "nav-bar":"../../components/nav-bar/nav-bar"
+    "nav-bar":"../../components/nav-bar/nav-bar",
+    "van-popup":"../../miniprogram_npm/@vant/weapp/popup/index",
+    "song-item-v2":"../../components/song-item-v2/song-item-v2"
   },
   "navigationStyle": "custom",
   "navigationBarTextStyle": "white"

@@ -13,6 +13,21 @@
     </block>
   </view>
 </nav-bar>
+<!-- 弹出列表 -->
+<van-popup
+        show="{{ show }}"
+        round
+        position="bottom"
+        custom-style="height: 60%;"
+        bind:close="onClose"
+        root-portal
+      >
+        <block wx:for="{{playSongList}}" wx:key="id">
+          <view class="item">
+            <song-item-v2 itemData="{{item}}" index="{{index+1}}" bindtap="onSongItemTap" data-index="{{index}}">{{item.name}}</song-item-v2>
+          </view>
+        </block>
+</van-popup>
 <!-- 内容 -->
 <swiper style="height: {{contentHeight}}px;" bindchange="onSwiperChange" current="{{ currentPage }}">
   <swiper-item class="music">
@@ -40,9 +55,11 @@
       <image src="../../assets/images/player/play_prev.png" mode="" class="btn prev" bindtap="onPrevBtnTap" />
       <image src="../../assets/images/player/play_{{ isPlaying ? 'pause' : 'resume'}}.png" mode="" class="btn play" bindtap="onPlayOrPauseTap" />
       <image src="../../assets/images/player/play_next.png" mode="" class="btn next" bindtap="onNextBtnTap" />
-      <image src="../../assets/images/player/play_music.png" mode="" class="btn list" />
+      <image src="../../assets/images/player/play_music.png" mode="" class="btn list" bindtap="onShowTap" ></image>
+      
     </view>
   </swiper-item>
+
   <swiper-item>
     <scroll-view scroll-y class="lyric-list" scroll-top='{{lyricScrollTop}}' scroll-with-animation>
       <block wx:for="{{lyricInfos}}" wx:key="time">
@@ -56,3 +73,4 @@
     </scroll-view>
   </swiper-item>
 </swiper>
+

@@ -19,7 +19,14 @@ Page({
     recMenuList: [],
     // 榜单数据
     isRankingData: false,
-    rankingInfos: {}
+    rankingInfos: {},
+    // 正在播放的歌曲信息:
+    currentSong: {},
+    isPlaying: false,
+    // 播放列表
+    show: false,
+    // 当前的歌曲列表
+    playSongList: [],
   },
   onLoad() {
     // 轮播图
@@ -34,12 +41,18 @@ Page({
     rankingStore.onState("originRanking",this.getRankingHanlder("originRanking"))
     rankingStore.onState("upRanking",this.getRankingHanlder("upRanking"))
     rankingStore.dispatch("fetchRankingDataAction")
+    // 获取播放栏的数据
+    playerStore.onStates(["currentSong",'isPlaying'], this.handlePlayInfos)
+    // 获取当前播放列表的数据
+    playerStore.onState("playSongList",this.handlGetSongLists)
   },
   onUnload() {
     recommendStore.offState("recommendSongInfo",this.handleRecommendSongs)
     rankingStore.offState("newRanking",this.getRankingHanlder("newRanking"))
     rankingStore.offState("originRanking",this.getRankingHanlder("originRanking"))
     rankingStore.offState("upRanking",this.getRankingHanlder("upRanking"))
+    playerStore.offStates(["currentSong",'isPlaying'], this.handlePlayInfos)
+    playerStore.offState("playSongList",this.handlGetSongLists)
   },
   // 监听点击搜索框
   onSearchClick() {
@@ -65,6 +78,24 @@ Page({
     playerStore.setState("playSongList", this.data.recommendSongs)
     playerStore.setState("playSongIndex",event.currentTarget.dataset.index)
   },
+  // 暂停歌曲
+  onPlayerPauseBtnTap() {
+    playerStore.dispatch("playMusicStatusAction")
+  },
+  // 点击当前音乐，进行跳转
+  onPlayBarAlbumTap() {
+    wx.navigateTo({
+      url: '../music-player/music-player'
+    })
+  },
+  // 弹出当前歌曲列表
+  onShowTap() {
+    this.setData({ show: true });
+  },
+  // 关闭单曲歌曲列表
+  onClose() {
+    this.setData({ show: false });
+  },
   // 请求轮播图
   async fetchMusicBanner() {
     const res:any = await getMusicBanner()
@@ -84,6 +115,24 @@ Page({
       this.setData({
         recommendSongs: value.tracks.slice(0, 6)
       })
+  },
+  handlePlayInfos({ currentSong,isPlaying}:any) {
+    if(currentSong) {
+      this.setData({
+        currentSong
+      })
+    }
+    if(isPlaying !== undefined) {
+      this.setData({
+        isPlaying
+      })
+    }
+  },
+  handlGetSongLists(value: any) {
+    console.log(value);
+    this.setData({
+      playSongList: value
+    })
   },
   getRankingHanlder(ranking: string) {
     return (value:any) => {

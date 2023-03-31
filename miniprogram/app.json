@@ -24,7 +24,7 @@
       },
       {
         "pagePath": "pages/main-video/main-video",
-        "text": "音乐",
+        "text": "视频",
         "iconPath": "assets/images/tabbar/video_normal.png",
         "selectedIconPath": "assets/images/tabbar/video_active.png"
       }

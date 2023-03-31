@@ -1,11 +1,7 @@
-import { getSongDetail, getSongLyric } from '../../services/player'
 import { throttle } from 'underscore'
-import { parseLyric } from '../../utils/parse-lyric'
-import playerStore from '../../store/playerStore'
-import randomNum from '../../utils/randomNum'
+import playerStore, {audioContext} from '../../store/playerStore'
 
 // 创建播放器
-const audioContext = wx.createInnerAudioContext()
 
 const app = getApp()
 Page({
@@ -20,33 +16,37 @@ Page({
         index: 1
       }
     ],
+
+    stateKeys: [ "id", "currentSong", "currentTime", "durationTime", "lyricInfos", "currentLyicText", "currentLyicIndex", "isPlaying",'playModeIndex'],
+
     id: <number>0,
     currentSong: {},
+    // 歌曲播放时间
+    currentTime: 0,
+    durationTime: 0,
     // 歌词
     lyricInfos: <{ time: number; text: string }[]>[],
     // 当前歌词
     currentLyicText: '',
     currentLyicIndex: -1,
-    // 页面
-    currentPage: 0,
-    contentHeight: 0,
 
-    // 歌曲播放时间
-    currentTime: 0,
-    durationTime: 0,
     // 进度条
     sliderValue: 0,
     // 进度条是否在改变
     isSliderChanging: false,
-    // 用来点击进度条后，设置需要等待
-    isWaiting: false,
-    // 判断是否暂定
-    isPlaying: true,
+    // 页面
+    currentPage: 0,
+    contentHeight: 0,
     // 设置顶行的高度
     topLyicItem: 0,
     bottomLyicItem: 0,
     // 歌词滚动的高度
     lyricScrollTop: 0,
+    // 用来点击进度条后，设置需要等待
+    isWaiting: false,
+    // 判断是否暂定
+    isPlaying: true,
+    
     // 正在播放的歌曲的数据
     playSongIndex: 0,
     playSongList: [],
@@ -54,112 +54,50 @@ Page({
     // 判断是否第一次播放
     isFirstPlay: true,
     // 播放模式 0.顺序播放 1.单曲循环 2.随机播放
-    playModeIndex: 0
+    playModeIndex: 0,
+    show: false,
   },
   onLoad(options: any) {
-    // 获取高度
+    // 1.获取高度
     this.setData({
       contentHeight: app.globalData.contentHeight,
       topLyicItem: (app.globalData.contentHeight / 2) - 60,
       bottomLyicItem: (app.globalData.contentHeight / 2) - 60
     })
-    // 获取传入的id并设置
+    // 2.获取传入的id并设置
     const id: number = options.id
     this.setData({ id })
 
-    // 播放歌曲
-    this.setupPlaySong()
+    // 3.播放歌曲(需要判断id是否有值，如果没有传则表示回到播放页)
+    if(id) playerStore.dispatch("playMusicWithSongId", id)
     
     // 获取歌曲列表
     playerStore.onStates(["playSongList","playSongIndex"], this.getPlaySongInfosHandler)
+    playerStore.onStates(this.data.stateKeys, this.getPlayerInfosHangler)
   },
   onUnload() {
     playerStore.offStates(['playSongList','playSongIndex'], this.getPlaySongInfosHandler)
+    playerStore.offStates(this.data.stateKeys, this.getPlayerInfosHangler)
   },
   // 播放歌曲的逻辑
   setupPlaySong() {
-    const id =this.data.id
-    // 根据ID获取歌曲详情详情
-    this.fetchSongDetail()
-    // 根据ID获取歌词信息
-    this.fetchSongLyric()
-    // 播放歌曲
-    audioContext.src = `https://music.163.com/song/media/outer/url?id=${id}.mp3`
-    // 自动播放
-    audioContext.autoplay = true
-    if(this.data.isFirstPlay) {
-      this.data.isFirstPlay = false
-      // 监听播放的进度 __ 节流处理
-      const throttleUpdataProgress = throttle(this.updataProgress, 500, {
-        leading: false,
-        trailing: false
-      })
-      audioContext.onTimeUpdate(() => {
-        // 先判断是否在滑动,然后更新
-        if (!this.data.isSliderChanging && !this.data.isWaiting) {
-          throttleUpdataProgress()
-        }
-        // 匹配正确的歌词
-        if (!this.data.lyricInfos.length) return
-        let index = this.data.lyricInfos.length - 1
-        for (let i = 0; i < this.data.lyricInfos.length; i++) {
-          const info: {
-            time: number
-            text: string
-          } = this.data.lyricInfos[i]
-          if (info.time > audioContext.currentTime * 1000) {
-            index = i - 1
-            break
-          }
-        }
-        if (index === this.data.currentLyicIndex) return
-        this.setData({
-          currentLyicText: this.data.lyricInfos[index].text ,
-          currentLyicIndex: index
-        })
-        // 根据歌词来确定应该滚动到的位置
-        const lyricScrollTop = index * 35 
-        this.setData({
-          lyricScrollTop
-        })
-      }),
-      //  用来解决进度条变化导致的监听失败
-      audioContext.onWaiting(() => {
-        audioContext.pause()
-      })
-      audioContext.onCanplay(() => {
-        audioContext.play()
-      })
-      // 监听播放结束后，自动播放下一首
-      audioContext.onEnded(()=>{
-        switch (this.data.playModeIndex) {
-          case 0:
-            this.songCut(this.data.playSongIndex+1)
-            break;
-          case 1:
-            this.songCut(this.data.playSongIndex)
-            break;
-          case 2:
-            const newIndex = randomNum(0,this.data.playSongList.length)
-            let index = newIndex === this.data.playSongIndex ?  randomNum(0,this.data.playSongList.length) : newIndex
-            this.songCut(index)
-            break;
-          default:
-            break;
-        }
-      })
-      }
   },
-  updataProgress() {
+  updataProgress: throttle(function(currentTime: number) {
+    // @ts-ignore 
+    if(this.data.isSliderChanging) return
     // 记录当前的时间
-    const sliderValue = (this.data.currentTime / this.data.durationTime) * 100
+    // @ts-ignore 
+    const sliderValue = (currentTime / this.data.durationTime) * 100
     // 修改进度条的进度
+    // @ts-ignore 
     this.setData({
       // 秒 * 1000
-      currentTime: audioContext.currentTime * 1000,
+      currentTime,
       sliderValue
     })
-  },
+  }, 1000, {
+    leading: false, trailing: false
+  }),
   // 歌曲列表
   getPlaySongInfosHandler({playSongIndex , playSongList}: {
     playSongList: any,
@@ -176,6 +114,43 @@ Page({
       })
     }
   },
+  // 播放歌曲
+  getPlayerInfosHangler(
+    {id, currentSong, currentTime, durationTime, lyricInfos, currentLyicText, currentLyicIndex, isPlaying, playModeIndex}: any
+  ) {
+    if( id !== undefined) {
+      this.setData({ id })
+    }
+    if( currentSong !== undefined) {
+      this.setData({ currentSong })
+    }
+    if( durationTime !== undefined) {
+      this.setData({ durationTime })
+    }
+    if( currentTime !== undefined) {
+      this.updataProgress(currentTime)
+    }
+    if( lyricInfos !== undefined) {
+      this.setData({ lyricInfos })
+    }
+    if( currentLyicText !== undefined) {
+      this.setData({ currentLyicText })
+    }
+    if( currentLyicIndex !== undefined) {
+      this.setData({ currentLyicIndex, lyricScrollTop: currentLyicIndex * 35 })
+    }
+    if( isPlaying !== undefined) {
+      this.setData({
+        isPlaying
+      })
+    }
+    if( playModeIndex !== undefined) {
+      this.setData({
+        playModeIndex
+      })
+    }
+  },
+  // 返回键
   onLeftTap() {
     wx.navigateBack()
   },
@@ -235,106 +210,28 @@ Page({
   },100),
   // 监听点击暂停和播放时间
   onPlayOrPauseTap() {
-    if (!audioContext.paused) {
-      // 暂停
-      audioContext.pause()
-      this.setData({
-        isPlaying: false
-      })
-    } else {
-      // 播放
-      audioContext.play()
-      this.setData({
-        isPlaying: true
-      })
-    }
+    playerStore.dispatch("playMusicStatusAction")
   },
   // 监听点击上一首
   onPrevBtnTap() {
-    switch (this.data.playModeIndex) {
-      case 0:
-        this.songCut(this.data.playSongIndex-1)
-        break;
-      case 1:
-        this.songCut(this.data.playSongIndex-1)
-        break;
-      case 2:
-        this.songCut(this.data.playSongPre)
-        break;
-      default:
-        break;
-    }
+    playerStore.dispatch("playNewMusicAction",false)
   },
   // 监听点击下一首
   onNextBtnTap() {
-    switch (this.data.playModeIndex) {
-      case 0:
-        this.songCut(this.data.playSongIndex+1)
-        break;
-      case 1:
-        this.songCut(this.data.playSongIndex+1)
-        break;
-      case 2:
-        const newIndex = randomNum(0,this.data.playSongList.length)
-        let index = newIndex === this.data.playSongIndex ?  randomNum(0,this.data.playSongList.length) : newIndex
-        this.songCut(index)
-        break;
-      default:
-        break;
-    }
+    playerStore.dispatch("playNewMusicAction")
+  },
+  // 弹出当前歌曲列表
+  onShowTap() {
+    console.log(1);
+    this.setData({ show: true });
+  },
+  // 关闭单曲歌曲列表
+  onClose() {
+    this.setData({ show: false });
   },
   // 监听播放模式的切换
   onModeBtnTap() {
-    let index = this.data.playModeIndex;
-    index = index === 2 ? 0 : index + 1 
-    this.setData({
-      playModeIndex: index
-    })
-  },
-  async fetchSongDetail() {
-    const res: any = await getSongDetail(this.data.id)
-    this.setData({
-      currentSong: res.songs[0],
-      // 毫秒
-      durationTime: res.songs[0].dt
-    })
-  },
-  async fetchSongLyric() {
-    const res: any = await getSongLyric(this.data.id)
-    const lrcString = res.lrc.lyric
-    const lyricInfos = parseLyric(lrcString)
-    this.setData({
-      lyricInfos
-    })
-  },
-  // 抽离函数：传入最新index，进行处理
-  songCut(index: number) {
-    // 记录切换前上一首歌
-    if(index !== this.data.playSongIndex) {
-      this.data.playSongPre = this.data.playSongIndex
-      const length = this.data.playSongList.length
-      // 先判断播放模式
-      if(this.data.playModeIndex === 0 || this.data.playModeIndex === 1) {
-        if(index === length) {
-          index = 0
-        } else if( index === -1 ) {
-          index = length-1
-        }
-      }
-      const newSong:any = this.data.playSongList[index]
-      // 修改仓库里的当前播放歌曲
-      playerStore.setState("playSongIndex", index)
-      this.setData({
-        id: newSong.id
-      })    
-      // 将之前的歌曲进行初始化
-      this.setData({currentSong: {}, currentTime: 0,durationTime: 0, sliderValue: 0})
-      // 播放新的歌曲
-      this.setupPlaySong()
-  } else {
-    // 重播逻辑
-    audioContext.stop()
-    audioContext.play()
+    playerStore.dispatch('changePlayModeAction')
   }
-  }
+  
 })

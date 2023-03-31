@@ -1,6 +1,7 @@
 <!-- 搜索框 -->
 <van-search
   value="{{ searchValue }}"
+  disabled 
   shape="round"
   background="#fafafa"
   placeholder="请输入搜索关键词"
@@ -37,5 +38,32 @@
         <ranking-item itemData="{{item}}" key="{{index}}"></ranking-item>
       </view>
     </block>
+  </view>
+</view>
+
+<!-- 播放工具栏 -->
+<view class="play-bar-placeholder"  wx:if="{{currentSong.name || isPlaying}}"></view>
+<view class="play-bar" wx:if="{{currentSong.name || isPlaying}}">
+  <view class="left" bindtap="onPlayBarAlbumTap">
+    <image class="album album-anim" src="{{currentSong.al.picUrl}}" style="animation-play-state: {{ isPlaying ? 'running' : 'paused'}} ;"/>
+    <view class="name">{{currentSong.name}}</view>
+  </view>
+  <view class="right">
+    <image src="../../assets/images/music/{{ isPlaying ? 'pause' : 'play'}}_icon.png" mode="" class="play" bindtap="onPlayerPauseBtnTap"/>
+    <van-popup
+      show="{{ show }}"
+      round
+      position="bottom"
+      custom-style="height: 60%;"
+      bind:close="onClose"
+    >
+    <block wx:for="{{playSongList}}" wx:key="id">
+      <view class="item">
+        <song-item-v2 itemData="{{item}}" index="{{index+1}}" bindtap="onSongItemTap" data-index="{{index}}">{{item.name}}</song-item-v2>
+      </view>
+    </block>
+    </van-popup>
+    <image src="../../assets/images/music/playlist_icon.png" mode="" class="icon" bindtap="onShowTap"/>
+    
   </view>
 </view>
