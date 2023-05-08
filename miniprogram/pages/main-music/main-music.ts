@@ -100,7 +100,7 @@ Page({
   async fetchMusicBanner() {
     const res:any = await getMusicBanner()
     this.setData({ banners: res.banners})
-  },
+  },      
   // 获取歌单
   async fetchSongMenuList() {
     const res: any = await Promise.all([getSongMenuList(),getSongMenuList('华语')])
@@ -129,7 +129,6 @@ Page({
     }
   },
   handlGetSongLists(value: any) {
-    console.log(value);
     this.setData({
       playSongList: value
     })

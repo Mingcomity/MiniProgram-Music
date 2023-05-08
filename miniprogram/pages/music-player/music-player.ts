@@ -45,7 +45,7 @@ Page({
     // 用来点击进度条后，设置需要等待
     isWaiting: false,
     // 判断是否暂定
-    isPlaying: true,
+    isPlaying: false,
     
     // 正在播放的歌曲的数据
     playSongIndex: 0,
@@ -222,7 +222,6 @@ Page({
   },
   // 弹出当前歌曲列表
   onShowTap() {
-    console.log(1);
     this.setData({ show: true });
   },
   // 关闭单曲歌曲列表

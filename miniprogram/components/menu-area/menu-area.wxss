@@ -13,3 +13,6 @@
 .list .item:last-of-type {
   margin-right: 24rpx;
 }
+.list::-webkit-scrollbar {
+  display: none;
+}
