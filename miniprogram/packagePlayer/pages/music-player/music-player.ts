@@ -1,5 +1,5 @@
 import { throttle } from 'underscore'
-import playerStore, {audioContext} from '../../store/playerStore'
+import playerStore, {audioContext} from '../../../store/playerStore'
 
 // 创建播放器
 

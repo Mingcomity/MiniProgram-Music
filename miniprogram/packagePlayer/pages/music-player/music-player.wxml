@@ -1,4 +1,4 @@
-<wxs src="../../utils/format.wxs" module="fmt" />
+<wxs src="../../../utils/format.wxs" module="fmt" />
 <!-- 背景图 -->
 <image src="{{currentSong.al.picUrl}}" class="bg-image" mode="aspectFill" />
 <view class="bg-cover"></view>

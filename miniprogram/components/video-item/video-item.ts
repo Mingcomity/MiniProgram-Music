@@ -8,7 +8,7 @@ Component({
   methods: {
     onVideoItemTap() {
       wx.navigateTo({
-        url: `../detail-video/detail-video?id=${this.data.itemData.id}`
+        url: `../../packageVideo/pages/detail-video/detail-video?id=${this.data.itemData.id}`
       })
     }
   }

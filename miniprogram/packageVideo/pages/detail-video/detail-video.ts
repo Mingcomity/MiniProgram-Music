@@ -1,4 +1,4 @@
-import { getMVUrl, getMVInfo, getMVRecommend } from '../../services/video'
+import { getMVUrl, getMVInfo, getMVRecommend } from '../../../services/video'
 Page({
   data: {
     MVUrl: <string>'',
